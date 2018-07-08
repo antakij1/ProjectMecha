@@ -207,9 +207,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   xMargin: 0.25
-  yMargin: 0.25
+  yMargin: 1
   xSmooth: 4
-  ySmooth: 4
+  ySmooth: 6.5
   maxXAndY: {x: 10, y: 4.9}
   minXAndY: {x: -6, y: -5.2}
 --- !u!1 &270173037
@@ -382,7 +382,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1240769272}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.48, y: 0.02, z: 0.5175781}
+  m_LocalPosition: {x: 0, y: 0.02, z: 0.5175781}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1293362552}
@@ -481,9 +481,12 @@ MonoBehaviour:
   whatToHit:
     serializedVersion: 2
     m_Bits: 1
-  BulletTrailPrefab: {fileID: 4148182272462520, guid: 227186cfb97f6c74283140fc23024952,
+  BulletTrailRightPrefab: {fileID: 4148182272462520, guid: 227186cfb97f6c74283140fc23024952,
+    type: 2}
+  BulletTrailLeftPrefab: {fileID: 4148182272462520, guid: 67bb2a7c4e8c8204186e687f984155ec,
     type: 2}
   effectSpawnRate: 10
+  character: {fileID: 1353848290}
 --- !u!61 &1293362554
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -509,6 +512,12 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.925, y: 0.925}
   m_EdgeRadius: 0
+--- !u!114 &1353848290 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770,
+    type: 2}
+  m_PrefabInternal: {fileID: 1409353559}
+  m_Script: {fileID: 11500000, guid: d08f91df3bd212f429df17f53ce2f364, type: 3}
 --- !u!1001 &1409353559
 Prefab:
   m_ObjectHideFlags: 0
@@ -518,11 +527,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -12.89
+      value: -12
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -8.38
+      value: -8.4
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
       propertyPath: m_LocalPosition.z
@@ -610,7 +619,39 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
       propertyPath: m_JumpForce
-      value: 850
+      value: 2500
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: m_MaxSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: gravScale
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: gravityScale
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5000000, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: m_Mass
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5000000, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: m_GravityScale
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: jumpConstant
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: initialJumpForce
+      value: 1500
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400002, guid: 87a2357765801c34292d6718d8b4d770, type: 2}
+      propertyPath: jumpForceLimit
+      value: 1000
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5800000, guid: 87a2357765801c34292d6718d8b4d770, type: 2}

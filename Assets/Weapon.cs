@@ -1,14 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityStandardAssets._2D;
 
 public class Weapon : MonoBehaviour {
     public float fireRate = 0;
     public float damage = 10;
     public LayerMask whatToHit;
-    public Transform BulletTrailPrefab;
+    public Transform BulletTrailRightPrefab;
+	public Transform BulletTrailLeftPrefab;
     float timeToSpawnEffect;
     public float effectSpawnRate = 10;
+	public PlatformerCharacter2D character;
 
     float timeToFire = 0;
     Transform firePoint;
@@ -17,7 +20,7 @@ public class Weapon : MonoBehaviour {
 	void Awake () {
         firePoint = transform.Find("FirePoint");
         if(firePoint == null) {
-            Debug.LogError("No firepoint found");
+            Debug.LogError("No firepoint found in Weapon script");
         }
     }
 	
@@ -46,6 +49,11 @@ public class Weapon : MonoBehaviour {
     }
 
     void Effect() {
-        Instantiate(BulletTrailPrefab, firePoint.position, firePoint.rotation);
+		if(character.getIsFacingRight()){
+			Instantiate(BulletTrailRightPrefab, firePoint.position, firePoint.rotation);
+		}
+		else{
+			Instantiate(BulletTrailLeftPrefab, firePoint.position, firePoint.rotation);
+		}
     }
 }

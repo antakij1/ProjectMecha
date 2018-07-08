@@ -18,7 +18,22 @@ namespace UnityStandardAssets._2D
         const float k_CeilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
         private Animator m_Anim;            // Reference to the player's animator component.
         private Rigidbody2D m_Rigidbody2D;
-        private bool m_FacingRight = true;  // For determining which way the player is currently facing.
+        public bool m_FacingRight = true;   // For determining which way the player is currently facing.
+		private float dashConstraint = 0.20f;// Time constraint, in seconds, within which the player must double-push a directional button to dash
+		private int lastButtonPressed = 0;	/* Represents the last directional button recently pressed. -1 for left, 1 for right. 0 for no directional button 
+											   pressed recently */
+											   
+		private float lastButtonPressedTime;// Time when the last directional button was pressed
+		private float dashTime = 0.3f;
+		private float whenDashed;
+		private bool dashing = false;
+		private float jumpStart; 			// Time when the player last began jumping 
+		private float totalJumpForce = 0f;	// Total amount of upward force that has been applied to the player for a single jump
+		public float jumpForceLimit = 2500f;// Highest amount of upward force that may be applied to a single jump
+		public float jumpConstant = 100f;	// Some bs constant for now
+		public float initialJumpForce = 625f; // Smallest jump theoretically possible. For use with new jump system.
+		private Transform firePoint;
+		bool jumpBegun;
 
         private void Awake()
         {
@@ -27,11 +42,17 @@ namespace UnityStandardAssets._2D
             m_CeilingCheck = transform.Find("CeilingCheck");
             m_Anim = GetComponent<Animator>();
             m_Rigidbody2D = GetComponent<Rigidbody2D>();
+			Transform square = transform.Find("Square_0");
+			firePoint = square.Find("FirePoint");
+			if(firePoint == null) {
+				Debug.LogError("No firepoint found from PlatformerCharacter2D script");
+			}
         }
 
         private void FixedUpdate()
         {
             m_Grounded = false;
+			jumpBegun = true;
 
             // The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
             // This can be done using layers instead but Sample Assets will not overwrite your project settings.
@@ -40,6 +61,9 @@ namespace UnityStandardAssets._2D
             {
                 if (colliders[i].gameObject != gameObject)
                     m_Grounded = true;
+					totalJumpForce = 0f;
+					jumpBegun = false;
+					print("grounded");
             }
             m_Anim.SetBool("Ground", m_Grounded);
 
@@ -50,7 +74,31 @@ namespace UnityStandardAssets._2D
 
         public void Move(float move, bool crouch, bool jump)
         {
-            // If crouching, check to see if the character can stand up
+			if (Time.time - whenDashed >= dashTime || m_Rigidbody2D.velocity.x == 0)
+			{
+				dashing = false;
+			}
+			if (!crouch && !dashing)
+			{
+				if (Input.GetButtonDown("Horizontal"))
+				{
+					int currentSign = (int)Input.GetAxisRaw("Horizontal");
+					if (currentSign != 0)
+					{
+						if (currentSign == lastButtonPressed && (Time.time - lastButtonPressedTime <= dashConstraint))
+						{
+							m_Rigidbody2D.AddForce(new Vector2(currentSign*m_JumpForce, 0f));
+							whenDashed = Time.time;
+							dashing = true;
+						}
+				
+						lastButtonPressedTime = Time.time;
+						lastButtonPressed = currentSign;
+					}
+				}
+			}
+			
+			// If crouching, check to see if the character can stand up
             if (!crouch && m_Anim.GetBool("Crouch"))
             {
                 // If the character has a ceiling preventing them from standing up, keep them crouching
@@ -64,7 +112,7 @@ namespace UnityStandardAssets._2D
             m_Anim.SetBool("Crouch", crouch);
 
             //only control the player if grounded or airControl is turned on
-            if (m_Grounded || m_AirControl)
+            if ((m_Grounded || m_AirControl))
             {
                 // Reduce the speed if crouching by the crouchSpeed multiplier
                 move = (crouch ? move*m_CrouchSpeed : move);
@@ -73,7 +121,14 @@ namespace UnityStandardAssets._2D
                 m_Anim.SetFloat("Speed", Mathf.Abs(move));
 
                 // Move the character
-                m_Rigidbody2D.velocity = new Vector2(move*m_MaxSpeed, m_Rigidbody2D.velocity.y);
+				if(!dashing)
+				{	
+					m_Rigidbody2D.velocity = new Vector2(move*m_MaxSpeed, m_Rigidbody2D.velocity.y);
+				}
+				else
+				{
+					m_Rigidbody2D.AddForce(new Vector2(move*m_MaxSpeed, 0f));
+				}
 
                 // If the input is moving the player right and the player is facing left...
                 if (move > 0 && !m_FacingRight)
@@ -88,14 +143,23 @@ namespace UnityStandardAssets._2D
                     Flip();
                 }
             }
-            // If the player should jump...
+            // If the player should begin a jump...
             if (m_Grounded && jump && m_Anim.GetBool("Ground"))
             {
-                // Add a vertical force to the player.
+				// Add an initial vertical force to the player.
                 m_Grounded = false;
                 m_Anim.SetBool("Ground", false);
-                m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+                m_Rigidbody2D.AddForce(new Vector2(0f, initialJumpForce)); //originally was just m_JumpForce
+				jumpBegun = true;
             }
+			// If the player should hold the button down to jump higher...
+			else if (!m_Grounded && Input.GetButton("Jump") && jumpBegun && totalJumpForce < jumpForceLimit){
+				//Add more force to the jump, until it reaches the jumpForceLimit.
+				float upForce = jumpStart/Time.time * jumpConstant;
+				m_Rigidbody2D.AddForce(new Vector2(0f, upForce));
+				totalJumpForce += upForce;
+				print("extra jumped!");
+			}
         }
 
 
@@ -108,6 +172,18 @@ namespace UnityStandardAssets._2D
             Vector3 theScale = transform.localScale;
             theScale.x *= -1;
             transform.localScale = theScale;
+			
+			Vector3 firePointScale = firePoint.localScale;
+			firePointScale.x *= -1;
+			firePoint.localScale = firePointScale;
         }
+		
+		public void setJumpStart(float time){
+			jumpStart = time;
+		}
+		
+		public bool getIsFacingRight(){
+			return m_FacingRight;
+		}
     }
 }
