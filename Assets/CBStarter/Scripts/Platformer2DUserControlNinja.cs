@@ -11,6 +11,9 @@ namespace UnityStandardAssets._2D
         private bool m_Jump;
         private bool attack1;
         private bool attack2;
+        public GameObject inventory;
+        public GameObject equipment;
+
 
 
         private void Awake()
@@ -21,6 +24,10 @@ namespace UnityStandardAssets._2D
 
         private void Update()
         {
+            if (inventory.activeSelf || equipment.activeSelf)
+            {
+                return;
+            }
             if (!m_Jump)
             {
                 // Read the jump input in Update so button presses aren't missed.
@@ -33,6 +40,10 @@ namespace UnityStandardAssets._2D
 
         private void FixedUpdate()
         {
+            if (inventory.activeSelf || equipment.activeSelf)
+            {
+                return;
+            }
             // Read the inputs.
             bool crouch = Input.GetKey(KeyCode.S);
             float h = CrossPlatformInputManager.GetAxis("Horizontal");
